@@ -1,7 +1,21 @@
+import { gql, useQuery } from '@apollo/client';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 
+const ViewerQuery = gql`
+  query ViewerQuery {
+    viewer {
+      id
+      name
+      status
+    }
+  }
+`;
+
 export default function Home() {
+  const { data } = useQuery(ViewerQuery);
+  const viewer = data?.viewer;
+
   return (
     <div className={styles.container}>
       <Head>
@@ -10,9 +24,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        {viewer && <h1 className={styles.title}>Hello, {viewer.name}</h1>}
 
         <p className={styles.description}>
           Get started by editing{' '}
