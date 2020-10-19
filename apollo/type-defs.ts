@@ -1,12 +1,24 @@
 import { gql } from '@apollo/client';
 
 export const typeDefs = gql`
-  type User {
+  type Review {
     id: ID!
     name: String!
-    status: String!
+    email: String
+    text: String!
   }
+
+  input AddReviewInput {
+    name: String!
+    email: String
+    text: String!
+  }
+
   type Query {
-    viewer: User
+    reviews: [Review!]!
+  }
+
+  type Mutation {
+    addReview(review: AddReviewInput!): Review
   }
 `;
