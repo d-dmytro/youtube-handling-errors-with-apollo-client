@@ -1,5 +1,6 @@
 import { gql, useQuery } from '@apollo/client';
 import Head from 'next/head';
+import Menu from '../components/Menu';
 import ReviewForm from '../components/ReviewForm';
 import styles from '../styles/Home.module.css';
 import { Product, Review } from '../types';
@@ -46,6 +47,8 @@ export default function Home() {
         </title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <Menu />
 
       {loading ? (
         <p>Loading...</p>
