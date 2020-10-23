@@ -33,7 +33,10 @@ export default function Home() {
   const { data, loading, refetch } = useQuery<
     ProductAndReviewsQuery,
     ProductAndReviewsQueryVariables
-  >(ProductAndReviewsDocument, { variables: { limit: 2 } });
+  >(ProductAndReviewsDocument, {
+    variables: { limit: 2 },
+    fetchPolicy: 'network-only',
+  });
 
   return (
     <div className={styles.container}>
@@ -76,11 +79,11 @@ export default function Home() {
           ) : (
             <p>No reviews yet.</p>
           )}
+
+          <h2>Leave a review</h2>
+          <ReviewForm onSuccess={() => refetch()} />
         </>
       ) : null}
-
-      <h2>Leave a review</h2>
-      <ReviewForm onSuccess={() => refetch()} />
     </div>
   );
 }
