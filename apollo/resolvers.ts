@@ -16,8 +16,15 @@ const reviews: Review[] = [];
 
 export const resolvers: IResolvers = {
   Query: {
-    reviews(_parent, _args, _context, _info) {
-      return reviews;
+    product() {
+      return {
+        name: 'Handling Errors with Apollo Client and React',
+        description:
+          'This is a good tutorial about error handling with Apollo Client and React.',
+      };
+    },
+    reviews(_parent, { limit }: { limit?: number }, _context, _info) {
+      return typeof limit === 'number' ? reviews.slice(0, limit) : reviews;
     },
   },
   Mutation: {

@@ -2,11 +2,15 @@ import { gql, useQuery } from '@apollo/client';
 import Head from 'next/head';
 import ReviewForm from '../components/ReviewForm';
 import styles from '../styles/Home.module.css';
-import { Review } from '../types';
+import { Product, Review } from '../types';
 
-const AllReviewsDocument = gql`
-  query AllReviews {
-    reviews {
+const ProductAndReviewsDocument = gql`
+  query AllReviews($limit: Int) {
+    product {
+      name
+      description
+    }
+    reviews(limit: $limit) {
       id
       name
       email
@@ -15,40 +19,62 @@ const AllReviewsDocument = gql`
   }
 `;
 
-interface AllReviewsQuery {
+interface ProductAndReviewsQuery {
+  product: Product | null;
   reviews: Review[];
 }
 
+interface ProductAndReviewsQueryVariables {
+  limit?: number;
+}
+
 export default function Home() {
-  const { data, loading, refetch } = useQuery<AllReviewsQuery>(
-    AllReviewsDocument
-  );
+  const { data, loading, refetch } = useQuery<
+    ProductAndReviewsQuery,
+    ProductAndReviewsQueryVariables
+  >(ProductAndReviewsDocument, { variables: { limit: 2 } });
 
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>
+          {loading
+            ? 'Loading...'
+            : data?.product
+            ? data.product.name
+            : 'Failed to load a product'}
+        </title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <h2>Reviews</h2>
-
       {loading ? (
         <p>Loading...</p>
-      ) : data && data.reviews.length ? (
-        <ul>
-          {data.reviews.map((review) => {
-            return (
-              <li key={review.id}>
-                <div>{review.name}</div>
-                <div>{review.text}</div>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p>No reviews yet.</p>
-      )}
+      ) : data ? (
+        <>
+          {data.product && (
+            <div>
+              <h1>{data.product.name}</h1>
+              <p>{data.product.description}</p>
+            </div>
+          )}
+
+          <h2>Reviews</h2>
+          {data.reviews.length ? (
+            <ul>
+              {data.reviews.map((review) => {
+                return (
+                  <li key={review.id}>
+                    <div>{review.name}</div>
+                    <div>{review.text}</div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>No reviews yet.</p>
+          )}
+        </>
+      ) : null}
 
       <h2>Leave a review</h2>
       <ReviewForm onSuccess={() => refetch()} />

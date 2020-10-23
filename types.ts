@@ -4,3 +4,8 @@ export interface Review {
   email?: string;
   text: string;
 }
+
+export interface Product {
+  name: string;
+  description: string;
+}

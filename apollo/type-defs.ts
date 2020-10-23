@@ -8,6 +8,11 @@ export const typeDefs = gql`
     text: String!
   }
 
+  type Product {
+    name: String!
+    description: String!
+  }
+
   input AddReviewInput {
     name: String!
     email: String
@@ -15,7 +20,8 @@ export const typeDefs = gql`
   }
 
   type Query {
-    reviews: [Review!]!
+    product: Product
+    reviews(limit: Int): [Review!]!
   }
 
   type Mutation {
