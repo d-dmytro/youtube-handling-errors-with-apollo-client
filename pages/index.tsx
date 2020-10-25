@@ -6,7 +6,7 @@ import styles from '../styles/Home.module.css';
 import { Product, Review } from '../types';
 
 const ProductAndReviewsDocument = gql`
-  query AllReviews($limit: Int) {
+  query ProductAndReviews($limit: Int) {
     product {
       name
       description
