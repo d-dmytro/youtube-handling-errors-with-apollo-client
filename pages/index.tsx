@@ -35,7 +35,6 @@ export default function Home() {
     ProductAndReviewsQueryVariables
   >(ProductAndReviewsDocument, {
     variables: { limit: 2 },
-    fetchPolicy: 'network-only',
   });
 
   return (
