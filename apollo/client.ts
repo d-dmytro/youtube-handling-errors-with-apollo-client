@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloClient, InMemoryCache, from } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
 
 type ApolloClientCache = any;
 let apolloClient: ApolloClient<ApolloClientCache> | undefined;
@@ -19,9 +20,28 @@ function createIsomorphLink() {
 }
 
 function createApolloClient() {
+  const errorLink = onError(({ networkError, graphQLErrors }) => {
+    if (graphQLErrors) {
+      for (const { message, locations, path } of graphQLErrors) {
+        console.log(
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+        );
+      }
+    }
+
+    if (networkError) {
+      console.log(`[Network error]: ${networkError}`);
+
+      if (typeof window !== 'undefined' && !window.navigator.onLine) {
+        alert('Sorry, your browser is offline.');
+      } else {
+        alert('Some other network error occurred.');
+      }
+    }
+  });
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
-    link: createIsomorphLink(),
+    link: from([errorLink, createIsomorphLink()]),
     cache: new InMemoryCache(),
   });
 }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { gql, useMutation } from '@apollo/client';
+import React, { useState } from 'react';
+import { gql, isApolloError, useMutation } from '@apollo/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Review } from '../types';
 import styles from './ReviewForm.module.css';
@@ -34,26 +34,62 @@ interface Props {
 }
 
 const ReviewForm: React.FC<Props> = ({ onSuccess }) => {
-  const { register, handleSubmit, formState, reset } = useForm<Values>();
+  const {
+    register,
+    handleSubmit,
+    formState,
+    reset,
+    errors,
+    setError,
+  } = useForm<Values>();
 
-  const [addReview] = useMutation<
+  const [addReview, { error }] = useMutation<
     AddReviewMutation,
     AddReviewMutationVariables
   >(AddReviewDocument);
 
-  const submitHandler: SubmitHandler<Values> = async (values) => {
-    const result = await addReview({
-      variables: { review: values },
-    });
+  const [errorMessage, setErrorMessage] = useState<string>();
 
-    if (result.data?.addReview) {
-      onSuccess();
-      reset();
+  const submitHandler: SubmitHandler<Values> = async (values) => {
+    try {
+      const result = await addReview({
+        variables: { review: values },
+      });
+
+      if (result.data?.addReview) {
+        onSuccess();
+        reset();
+      }
+    } catch (e) {
+      let messageShown = false;
+
+      if (isApolloError(e)) {
+        for (const gqlError of e.graphQLErrors) {
+          if (gqlError.extensions?.code === 'BAD_USER_INPUT') {
+            if (Array.isArray(gqlError.extensions?.errors)) {
+              setErrorMessage(gqlError.message);
+
+              for (const fieldError of gqlError.extensions.errors) {
+                setError(fieldError.property, {
+                  message: fieldError.message,
+                });
+              }
+
+              messageShown = true;
+            }
+          }
+        }
+      }
+
+      if (!messageShown) {
+        setErrorMessage('An error occurred.');
+      }
     }
   };
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className={styles.form}>
+      {errorMessage && <p>{errorMessage}</p>}
       <div className={styles.field}>
         <label htmlFor="review-name">Name*</label>
         <input
@@ -62,6 +98,7 @@ const ReviewForm: React.FC<Props> = ({ onSuccess }) => {
           ref={register}
           className={styles.input}
         />
+        {errors.name && <p>{errors.name.message}</p>}
       </div>
 
       <div className={styles.field}>
@@ -83,6 +120,7 @@ const ReviewForm: React.FC<Props> = ({ onSuccess }) => {
           ref={register}
           className={styles.input}
         />
+        {errors.text && <p>{errors.text.message}</p>}
       </div>
 
       <button

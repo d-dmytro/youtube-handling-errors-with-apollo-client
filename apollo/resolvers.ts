@@ -1,4 +1,4 @@
-import { IResolvers } from 'apollo-server-micro';
+import { IResolvers, UserInputError } from 'apollo-server-micro';
 import { Review } from '../types';
 
 interface AddReviewInput {
@@ -29,6 +29,22 @@ export const resolvers: IResolvers = {
   },
   Mutation: {
     addReview(_parent, { review }: AddReviewVariables) {
+      const errors: { property: string; message: string }[] = [];
+
+      if (!review.name) {
+        errors.push({ property: 'name', message: 'Please enter your name.' });
+      }
+
+      if (!review.text) {
+        errors.push({ property: 'text', message: 'Please enter your review.' });
+      }
+
+      if (errors.length) {
+        throw new UserInputError('Invalid input.', {
+          errors,
+        });
+      }
+
       const newReview: Review = {
         id: `${nextReviewId++}`,
         name: review.name,

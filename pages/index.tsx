@@ -30,12 +30,29 @@ interface ProductAndReviewsQueryVariables {
 }
 
 export default function Home() {
-  const { data, loading, refetch } = useQuery<
+  const { data, loading, error, refetch } = useQuery<
     ProductAndReviewsQuery,
     ProductAndReviewsQueryVariables
   >(ProductAndReviewsDocument, {
     variables: { limit: 2 },
+    fetchPolicy: 'network-only',
+    errorPolicy: 'all',
   });
+
+  console.log({ error });
+  let errorMessage: string | undefined;
+
+  if (error) {
+    for (const gqlError of error.graphQLErrors) {
+      if (gqlError.path?.join('.') === 'product') {
+        errorMessage = gqlError.message;
+      }
+    }
+
+    if (!errorMessage) {
+      errorMessage = 'An error occurred.';
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -54,13 +71,19 @@ export default function Home() {
 
       {loading ? (
         <p>Loading...</p>
-      ) : data ? (
+      ) : errorMessage ? (
+        <p>{errorMessage}</p>
+      ) : null}
+
+      {data ? (
         <>
-          {data.product && (
+          {data.product ? (
             <div>
               <h1>{data.product.name}</h1>
               <p>{data.product.description}</p>
             </div>
+          ) : (
+            <p>Could not get the product data.</p>
           )}
 
           <h2>Reviews</h2>
